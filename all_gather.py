@@ -77,17 +77,13 @@ def run_all_gather(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype)).to(
-                    get_accelerator().device_name(local_rank)
-                )
+                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype), device="cuda")
                 sync_all()
                 input = (mat.mul_(float(global_rank))).view(-1)
                 # Delete original mat to avoid OOM
                 del mat
                 get_accelerator().empty_cache()
-                output = torch.zeros(input.nelement() * world_size, dtype=getattr(torch, args.dtype)).to(
-                    get_accelerator().device_name(local_rank)
-                )
+                output = torch.zeros(input.nelement() * world_size, dtype=getattr(torch, args.dtype), device="cuda")
             except RuntimeError as e:
                 if "out of memory" in str(e):
                     if dist.get_rank() == 0:
@@ -118,17 +114,13 @@ def run_all_gather(local_rank, args):
             args=args,
         )
         try:
-            mat = torch.ones(elements_per_gpu, dtype=getattr(torch, args.dtype)).to(
-                get_accelerator().device_name(local_rank)
-            )
+            mat = torch.ones(elements_per_gpu, dtype=getattr(torch, args.dtype)).cuda()
             # multiply each GPU's tensor by the rank to ease debugging
             input = (mat.mul_(float(global_rank))).view(-1)
             # Delete original mat to avoid OOM
             del mat
             get_accelerator().empty_cache()
-            output = torch.zeros(elements_per_gpu * world_size, dtype=getattr(torch, args.dtype)).to(
-                get_accelerator().device_name(local_rank)
-            )
+            output = torch.zeros(elements_per_gpu * world_size, dtype=getattr(torch, args.dtype)).cuda()
         except RuntimeError as e:
             if "out of memory" in str(e):
                 if dist.get_rank() == 0:

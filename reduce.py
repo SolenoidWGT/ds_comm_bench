@@ -70,9 +70,7 @@ def run_reduce(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype)).to(
-                    get_accelerator().device_name(local_rank)
-                )
+                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype), device="cuda")
                 sync_all()
                 input = (mat.mul_(float(global_rank))).view(-1)
             except RuntimeError as e:
@@ -98,9 +96,7 @@ def run_reduce(local_rank, args):
             args=args,
         )
         try:
-            mat = torch.ones(elements_per_gpu, dtype=getattr(torch, args.dtype)).to(
-                get_accelerator().device_name(local_rank)
-            )
+            mat = torch.ones(elements_per_gpu, dtype=getattr(torch, args.dtype), device="cuda")
             input = (mat.mul_(float(global_rank))).view(-1)
         except RuntimeError as e:
             if "out of memory" in str(e):

@@ -67,8 +67,7 @@ def run_all_to_all(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M,
-                                 dtype=getattr(torch, args.dtype)).to(get_accelerator().device_name(local_rank))
+                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype) device="cuda") device="cuda"
                 assert mat.numel() % world_size == 0, f"tensor cannot be divided in {world_size} chunks"
                 sync_all()
                 input = ((mat.mul_(float(global_rank))).view(-1))
@@ -91,16 +90,14 @@ def run_all_to_all(local_rank, args):
                                      local_rank=local_rank,
                                      args=args)
         try:
-            mat = torch.ones(elements_per_gpu, dtype=getattr(torch,
-                                                             args.dtype)).to(get_accelerator().device_name(local_rank))
+            mat = torch.ones(elements_per_gpu, dtype=getattr(torch, args.dtype), device="cuda")
             assert mat.numel(
             ) % world_size == 0, f"tensor with {mat.numel()} elements cannot be divided in {world_size} chunks"
             input = ((mat.mul_(float(global_rank))).view(-1))
             # Delete original mat to avoid OOM
             del mat
             get_accelerator().empty_cache()
-            output = torch.zeros(elements_per_gpu,
-                                 dtype=getattr(torch, args.dtype)).to(get_accelerator().device_name(local_rank))
+            output = torch.zeros(elements_per_gpu, dtype=getattr(torch, args.dtype), device="cuda")
         except RuntimeError as e:
             if 'out of memory' in str(e):
                 if dist.get_rank() == 0:

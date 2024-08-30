@@ -53,7 +53,13 @@ def main(args, rank):
 
 # For directly calling benchmark
 if __name__ == "__main__":
-    os.environ["NCCL_IB_HCA"] = "mlx5_2,mlx5_3,mlx5_4,mlx5_5"
+    # os.environ["NCCL_IB_HCA"] = "mlx5_2,mlx5_3,mlx5_4,mlx5_5"
+    rank = int(os.environ['RANK'])
+    local_rank = rank % 8
+    os.environ['LOCAL_RANK'] = str(local_rank)
+    torch.cuda.set_device(local_rank)
+
     args = benchmark_parser().parse_args()
-    rank = args.local_rank
+    args.local_rank = local_rank    
+
     main(args, rank)

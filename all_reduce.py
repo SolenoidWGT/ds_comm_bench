@@ -70,9 +70,7 @@ def run_all_reduce(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype)).to(
-                    get_accelerator().device_name(local_rank)
-                )
+                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype), device="cuda")
                 sync_all()
                 input = (mat.mul_(float(global_rank))).view(-1)
             except RuntimeError as e:
@@ -172,9 +170,7 @@ def run_all_reduce_node_view(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype)).to(
-                    get_accelerator().device_name(local_rank)
-                )
+                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype), device="cuda")
                 sync_all()
                 input = (mat.mul_(float(global_rank))).view(-1)
             except RuntimeError as error:
