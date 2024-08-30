@@ -67,7 +67,7 @@ def run_all_to_all(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype) device="cuda") device="cuda"
+                mat = torch.ones(world_size, M, dtype=getattr(torch, args.dtype), device="cuda")
                 assert mat.numel() % world_size == 0, f"tensor cannot be divided in {world_size} chunks"
                 sync_all()
                 input = ((mat.mul_(float(global_rank))).view(-1))
